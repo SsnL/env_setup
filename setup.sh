@@ -23,16 +23,16 @@ if [[ -z $(command -v conda) ]]; then
 
   cat <<EOT >> $HOME/.zshrc
 # miniconda
-export PATH=\$HOME/miniconda3/bin:\$PATH" >> $HOME/.zshrc
+export PATH=\$HOME/miniconda3/bin:\$PATH
 EOT
-  
-  source $HOME/.zshrc
 fi
 
 # tmux plugin manager
 # tmux better mouse mode
-git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
-cat <<EOT >> $HOME/.tmux.conf 
+if [[ ! -d "$HOME/.tmux/plugins/tpm" ]]; then
+
+  git clone https://github.com/tmux-plugins/tpm $HOME/.tmux/plugins/tpm
+  cat <<EOT >> $HOME/.tmux.conf
 # List of plugins
 set -g @plugin 'tmux-plugins/tpm'
 set -g @plugin 'tmux-plugins/tmux-sensible'
@@ -44,7 +44,19 @@ run -b '~/.tmux/plugins/tpm/tpm'
 set-option -g mouse on
 set-option -g history-limit 20000
 EOT
-tmux source ~/.tmux.conf
+  tmux source $HOME/.tmux.conf
+fi
+
+if [[ -d "/usr/local/cuda" ]]; then
+  cat <<EOT >> $HOME/.zshrc
+# cuda
+export PATH=/usr/local/cuda/bin:\$PATH
+EOT
+fi
+
+if [[ -n "$ZSH_VERSION" ]]; then
+  source $HOME/.zshrc
+fi
 
 # TODO: gdb
 
