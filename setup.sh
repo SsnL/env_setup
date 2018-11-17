@@ -59,5 +59,6 @@ if [[ -n "$ZSH_VERSION" ]]; then
 fi
 
 # TODO: gdb
-
+# TODO: npm global dir https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally
 popd
+
