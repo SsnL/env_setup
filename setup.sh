@@ -47,6 +47,7 @@ EOT
   tmux source $HOME/.tmux.conf
 fi
 
+# cuda home
 if [[ -d "/usr/local/cuda" ]]; then
   cat <<EOT >> $HOME/.zshrc
 # cuda
@@ -54,11 +55,14 @@ export PATH=/usr/local/cuda/bin:\$PATH
 EOT
 fi
 
-if [[ -n "$ZSH_VERSION" ]]; then
-  source $HOME/.zshrc
-fi
+# git 
+git config --global core.editor "vim"
 
 # TODO: gdb
 # TODO: npm global dir https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally
+
+if [[ -n "$ZSH_VERSION" ]]; then
+  source $HOME/.zshrc
+fi
 popd
 
