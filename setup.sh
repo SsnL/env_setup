@@ -60,6 +60,8 @@ git config --global core.editor "vim"
 
 # TODO: gdb
 # TODO: npm global dir https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally
+# TODO: vim, ctrl-p, NERDTree, https://github.com/scrooloose/nerdcommenter
+# TODO: codemod
 
 if [[ -n "$ZSH_VERSION" ]]; then
   source $HOME/.zshrc
