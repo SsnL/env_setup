@@ -60,7 +60,10 @@ git config --global core.editor "vim"
 # aliases
 cat <<EOT >> $HOME/.zshrc
 # git
-alias gsub="git submodule sync --recursive; git submodule update --init --recursive"
+function gsub() {
+    git submodule sync --recursive "$@" && \
+    git submodule update --init --recursive "$@"
+}
 EOT
 
 # TODO: gdb
