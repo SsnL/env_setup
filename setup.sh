@@ -279,6 +279,8 @@ alias cpgdb="cuda-gdb -tui r --args python"
 EOT
 EOM
 
+# TODO: fix printing of things like \033\0143 in script above when -v
+
 # TODO: npm global dir https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally
 # TODO: vim, ctrl-p, NERDTree, https://github.com/scrooloose/nerdcommenter
 # TODO: codemod
