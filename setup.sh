@@ -21,6 +21,11 @@ while test $# -gt 0; do
       VERBOSE=true
       shift
       ;;
+    -vv)
+      VERBOSE=true
+      set -x
+      shift
+      ;;
     *)
       FORCE_RUNS+=("$1")
       shift
@@ -130,7 +135,11 @@ function run_if_needed() {
     if $VERBOSE ; then
       local CONTENT_BEFORE="$(cat $HOME/$STORE_FILENAME)"
     fi
-    sed -i '' "/^$NAME[[:space:]]/d" $HOME/$STORE_FILENAME
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      sed -i '' "/^$NAME[[:space:]]/d" $HOME/$STORE_FILENAME
+    else
+      sed -i "/^$NAME[[:space:]]/d" $HOME/$STORE_FILENAME
+    fi
     eval "$SCRIPT"
     local RV=$?
     echo "$NAME $SCRIPT_SHA" >> $HOME/$STORE_FILENAME
