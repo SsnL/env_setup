@@ -242,7 +242,6 @@ EOM
 # tmux better mouse mode
 run_if_needed "tmux" <<- 'EOM'
 if [[ ! -d "$HOME/.tmux/plugins/tpm" ]]; then
-
   git clone https://github.com/tmux-plugins/tpm $HOME/.tmux/plugins/tpm
   cat <<- 'EOT' >> $HOME/.tmux.conf
 # List of plugins
@@ -262,11 +261,12 @@ EOM
 
 # gdb
 run_if_needed "gdb" <<- 'EOM'
-# gdb dashboard
-wget -q git.io/.gdbinit -O $HOME/.gdbinit
+if [[ ! "$OSTYPE" == "darwin"* ]]; then
+  # gdb dashboard
+  wget -q git.io/.gdbinit -O $HOME/.gdbinit
 
-# helpers
-cat <<- 'EOT' >> $HOME/.zshrc
+  # helpers
+  cat <<- 'EOT' >> $HOME/.zshrc
 # gdb
 function pgdb () {
   local TTY=$(tmux list-panes -s -F "#{pane_tty},#{pane_top},#{pane_left}" | \
@@ -287,6 +287,7 @@ function pgdb () {
 alias pgdb="gdb r --args python"
 alias cpgdb="cuda-gdb -tui r --args python"
 EOT
+fi
 EOM
 
 # TODO: fix printing of things like \033\0143 in script above when -v
