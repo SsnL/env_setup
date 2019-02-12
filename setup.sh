@@ -15,6 +15,7 @@ while test $# -gt 0; do
       echo "options:"
       echo "-h, --help                show brief help"
       echo "-v, --verbose             turn on verbose mode"
+      echo "-vv                       turn on \`set -x\` and verbose mode"
       exit 0
       ;;
     -v|--verbose)
