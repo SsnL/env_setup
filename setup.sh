@@ -45,7 +45,7 @@ if [[ "$OSTYPE" == "linux-gnu" ]]; then
   if which yum ; then
     PKG_MANAGER="yum"
   elif which apt-get ; then
-    PKG_MANAGER="apt-get"
+    PKG_MANAGER="sudo apt-get"
   fi
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   # macOS
@@ -66,6 +66,16 @@ elif [[ "$OSTYPE" == "freebsd"* ]]; then
 else
   # Unknown.
   true
+fi
+
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  function sed_inplace() {
+    sed -i '' "$@"
+  }
+else
+  function sed_inplace() {
+    sed -i "$@"
+  }
 fi
 
 function to_lower() {
@@ -136,11 +146,7 @@ function run_if_needed() {
     if $VERBOSE ; then
       local CONTENT_BEFORE="$(cat $HOME/$STORE_FILENAME)"
     fi
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-      sed -i '' "/^$NAME[[:space:]]/d" $HOME/$STORE_FILENAME
-    else
-      sed -i "/^$NAME[[:space:]]/d" $HOME/$STORE_FILENAME
-    fi
+    sed_inplace "/^$NAME[[:space:]]/d" $HOME/$STORE_FILENAME
     eval "$SCRIPT"
     local RV=$?
     echo "$NAME $SCRIPT_SHA" >> $HOME/$STORE_FILENAME
@@ -177,6 +183,23 @@ run_if_needed "oh-my-zsh" <<- 'EOM'
 if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
   sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 fi
+
+# installl powerline fonts for agnoster theme
+if [[ "$PKG_MANAGER" == *"apt"* ]]; then
+  $PKG_MANAGER install fonts-powerline
+else
+  # clone
+  git clone https://github.com/powerline/fonts.git --depth=1
+  # install
+  cd fonts
+  ./install.sh
+  # clean-up a bit
+  cd ..
+  rm -rf fonts
+fi
+
+# set theme
+sed_inplace "s/^ZSH_THEME=.*$/ZSH_THEME=\"agnoster\"/g" $HOME/.zshrc
 EOM
 
 # basic shell setup
