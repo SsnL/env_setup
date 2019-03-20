@@ -175,7 +175,7 @@ run_if_needed "zsh" <<- 'EOM'
 if [[ -z $(command -v zsh) ]]; then
   $PKG_MANAGER update
   $PKG_MANAGER install zsh -q -y
-  chsh -s $(which zsh)
+  chsh -s $(which zsh) $USER
 fi
 EOM
 
