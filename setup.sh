@@ -173,7 +173,8 @@ pushd $DIR > /dev/null
 # zsh
 run_if_needed "zsh" <<- 'EOM'
 if [[ -z $(command -v zsh) ]]; then
-  $PKG_MANAGER install zsh
+  $PKG_MANAGER update
+  $PKG_MANAGER install zsh -q -y
   chsh -s $(which zsh)
 fi
 EOM
@@ -186,7 +187,8 @@ fi
 
 # installl powerline fonts for agnoster theme
 if [[ "$PKG_MANAGER" == *"apt"* ]]; then
-  $PKG_MANAGER install fonts-powerline
+  $PKG_MANAGER update
+  $PKG_MANAGER install fonts-powerline -q -y
 else
   # clone
   git clone https://github.com/powerline/fonts.git --depth=1
@@ -205,6 +207,7 @@ EOM
 # basic shell setup
 run_if_needed "basic_shell" <<- 'EOM'
 if ! which vim > /dev/null ; then
+  $PKG_MANAGER update
   $PKG_MANAGER install vim -q -y
 fi
 cat <<-'EOT' >> $HOME/.zshrc
@@ -244,7 +247,8 @@ EOM
 # git
 run_if_needed "git" <<- 'EOM'
 if ! which git > /dev/null ; then
-  $PKG_MANAGER install git -y -q
+  $PKG_MANAGER update
+  $PKG_MANAGER install git -q -y
 fi
 git config --global core.editor "vim"
 # aliases
