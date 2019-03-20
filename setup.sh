@@ -2,6 +2,11 @@
 
 set -eo pipefail
 
+if [ "$EUID" -eq 0 ]; then 
+  echo "Please do not run as root"
+  exit 1
+fi
+
 VERBOSE=false
 FORCE_RUNS=()
 
@@ -175,7 +180,7 @@ run_if_needed "zsh" <<- 'EOM'
 if [[ -z $(command -v zsh) ]]; then
   $PKG_MANAGER update
   $PKG_MANAGER install zsh -q -y
-  chsh -s $(which zsh) $USER
+  sudo chsh -s $(which zsh) $USER
 fi
 EOM
 
@@ -234,6 +239,13 @@ if [[ -z $(command -v conda) ]]; then
 export PATH=$HOME/miniconda3/bin:$PATH
 EOT
 fi
+conda install jupyter ipython numpy scipy yaml matplotlib scikit-image scikit-learn six pytest mkl mkl-include -y
+conda install -c conda-forge jupyter_contrib_nbextensions -y
+yes | pip install dominate visdom oyaml
+$PKG_MANAGER update
+$PKG_MANAGER install gcc -q -y
+pip uninstall pillow -y
+yes | CC="cc -mavx2" pip install -U --force-reinstall pillow-simd
 EOM
 
 # cuda home
