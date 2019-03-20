@@ -239,11 +239,11 @@ if [[ -z $(command -v conda) ]]; then
 export PATH=$HOME/miniconda3/bin:$PATH
 EOT
 fi
-conda install jupyter ipython numpy scipy yaml matplotlib scikit-image scikit-learn six pytest mkl mkl-include -y
+conda install jupyter ipython numpy scipy yaml matplotlib scikit-image scikit-learn six pytest mkl mkl-include cmake -y
 conda install -c conda-forge jupyter_contrib_nbextensions -y
 yes | pip install dominate visdom oyaml
 $PKG_MANAGER update
-$PKG_MANAGER install gcc -q -y
+$PKG_MANAGER install gcc g++ -q -y
 pip uninstall pillow -y
 yes | CC="cc -mavx2" pip install -U --force-reinstall pillow-simd
 EOM
