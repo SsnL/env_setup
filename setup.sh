@@ -250,6 +250,9 @@ EOM
 
 # cuda home
 # TODO: install cuda if there is cuda-enabled GPU
+#   - PATH includes /usr/local/cuda-10.1/bin
+#   - LD_LIBRARY_PATH includes /usr/local/cuda-10.1/lib64, or, 
+#     add /usr/local/cuda-10.1/lib64 to /etc/ld.so.conf and run ldconfig as root
 run_if_needed "cuda" <<- 'EOM'
 if [[ -d "/usr/local/cuda" ]]; then
   cat <<- 'EOT' >> $HOME/.zshrc
