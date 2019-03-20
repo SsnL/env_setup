@@ -249,6 +249,7 @@ yes | CC="cc -mavx2" pip install -U --force-reinstall pillow-simd
 EOM
 
 # cuda home
+# TODO: install cuda if there is cuda-enabled GPU
 run_if_needed "cuda" <<- 'EOM'
 if [[ -d "/usr/local/cuda" ]]; then
   cat <<- 'EOT' >> $HOME/.zshrc
