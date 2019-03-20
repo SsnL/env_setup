@@ -239,7 +239,7 @@ if [[ -z $(command -v conda) ]]; then
 export PATH=$HOME/miniconda3/bin:$PATH
 EOT
 fi
-conda install jupyter ipython numpy scipy yaml matplotlib scikit-image scikit-learn six pytest mkl mkl-include cmake -y
+conda install jupyter ipython numpy scipy yaml matplotlib scikit-image scikit-learn six pytest mkl mkl-include cmake ninja -y
 conda install -c conda-forge jupyter_contrib_nbextensions -y
 yes | pip install dominate visdom oyaml
 $PKG_MANAGER update
