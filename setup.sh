@@ -190,6 +190,8 @@ if [[ "$PKG_MANAGER" == *"apt"* ]]; then
   $PKG_MANAGER update
   $PKG_MANAGER install fonts-powerline -q -y
 else
+  $PKG_MANAGER update
+  $PKG_MANAGER install git -q -y
   # clone
   git clone https://github.com/powerline/fonts.git --depth=1
   # install
