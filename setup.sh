@@ -43,7 +43,7 @@ if [[ "$OSTYPE" == "linux-gnu" ]]; then
   # Linux
   MINICONDA_INSTALL_SH="Miniconda3-latest-Linux-x86_64.sh"
   if which yum ; then
-    PKG_MANAGER="yum"
+    PKG_MANAGER="sudo yum"
   elif which apt-get ; then
     PKG_MANAGER="sudo apt-get"
   fi
@@ -270,6 +270,8 @@ EOM
 # tmux plugin manager
 # tmux better mouse mode
 run_if_needed "tmux" <<- 'EOM'
+$PKG_MANAGER update
+$PKG_MANAGER install tmux -q -y
 if [[ ! -d "$HOME/.tmux/plugins/tpm" ]]; then
   git clone https://github.com/tmux-plugins/tpm $HOME/.tmux/plugins/tpm
   cat <<- 'EOT' >> $HOME/.tmux.conf
