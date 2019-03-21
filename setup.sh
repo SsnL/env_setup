@@ -2,10 +2,16 @@
 
 set -eo pipefail
 
-if [ "$EUID" -eq 0 ]; then
-  echo "Please do not run as root"
+if [ "$EUID" -ne 0 ]; then
+  echo "Please run as root"
   exit 1
 fi
+
+real_user=$(who am i | awk '{print $1}')
+
+function as_real_user() {
+  sudo -u $real_user "$@"
+}
 
 VERBOSE=false
 FORCE_RUNS=()
@@ -48,9 +54,9 @@ if [[ "$OSTYPE" == "linux-gnu" ]]; then
   # Linux
   MINICONDA_INSTALL_SH="Miniconda3-latest-Linux-x86_64.sh"
   if which yum ; then
-    PKG_MANAGER="sudo yum"
+    PKG_MANAGER="yum"
   elif which apt-get ; then
-    PKG_MANAGER="sudo apt-get"
+    PKG_MANAGER="apt-get"
   fi
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   # macOS
@@ -183,7 +189,7 @@ run_if_needed "zsh" <<- 'EOM'
 if [[ -z $(command -v zsh) ]]; then
   $PKG_MANAGER update
   $PKG_MANAGER install zsh -q -y
-  sudo chsh -s $(which zsh) $USER
+  chsh -s $(which zsh) $USER
 fi
 EOM
 
@@ -203,13 +209,13 @@ if [[ "$PKG_MANAGER" == *"apt"* ]]; then
   $PKG_MANAGER install fonts-powerline -q -y
 else
   # clone
-  git clone https://github.com/powerline/fonts.git --depth=1
+  as_real_user git clone https://github.com/powerline/fonts.git --depth=1
   # install
   cd fonts
-  ./install.sh
+  as_real_user ./install.sh
   # clean-up a bit
   cd ..
-  rm -rf fonts
+  as_real_user rm -rf fonts
 fi
 
 # set theme
@@ -222,7 +228,7 @@ if ! which vim > /dev/null ; then
   $PKG_MANAGER update
   $PKG_MANAGER install vim -q -y
 fi
-cat <<-'EOT' >> $HOME/.zshrc
+as_real_user cat <<-'EOT' >> $HOME/.zshrc
 unsetopt correct_all
 unsetopt correct
 # User specific aliases and functions for all shells
@@ -238,9 +244,9 @@ if ! which git > /dev/null ; then
   $PKG_MANAGER update
   $PKG_MANAGER install git -q -y
 fi
-git config --global core.editor "vim"
+as_real_user git config --global core.editor "vim"
 # aliases
-cat <<- 'EOT' >> $HOME/.zshrc
+as_real_user cat <<- 'EOT' >> $HOME/.zshrc
 # git
 function gsub() {
   git submodule sync --recursive "$@" && \
@@ -257,21 +263,21 @@ EOM
 # TODO: check version
 run_if_needed "conda" <<- 'EOM'
 if [[ -z $(command -v conda) ]]; then
-  wget https://repo.anaconda.com/miniconda/$MINICONDA_INSTALL_SH -O ./miniconda.sh
-  bash ./miniconda.sh -b -f -p $HOME/miniconda3
+  as_real_user wget https://repo.anaconda.com/miniconda/$MINICONDA_INSTALL_SH -O ./miniconda.sh
+  as_real_user bash ./miniconda.sh -b -f -p $HOME/miniconda3
 
-  cat << 'EOT' >> $HOME/.zshrc
+  as_real_user cat << 'EOT' >> $HOME/.zshrc
 # miniconda
 export PATH=$HOME/miniconda3/bin:$PATH
 EOT
 fi
-conda install jupyter ipython numpy scipy yaml matplotlib scikit-image scikit-learn \
-              six pytest mkl mkl-include pyyaml setuptools cmake cffi typing sphinx -y
-conda install -c conda-forge jupyter_contrib_nbextensions -y
-yes | pip install dominate visdom oyaml codemod
+as_real_user conda install jupyter ipython numpy scipy yaml matplotlib scikit-image scikit-learn \
+                           six pytest mkl mkl-include pyyaml setuptools cmake cffi typing sphinx -y
+as_real_user conda install -c conda-forge jupyter_contrib_nbextensions -y
+yes | as_real_user pip install dominate visdom oyaml codemod
 $PKG_MANAGER update
 $PKG_MANAGER install gcc g++ make -q -y
-pip uninstall pillow -y
+as_real_user pip uninstall pillow -y
 yes | CC="cc -mavx2" pip install -U --force-reinstall pillow-simd
 EOM
 
@@ -287,19 +293,19 @@ if [[ "$OSTYPE" == "linux-gnu" ]]; then
       $PKG_MANAGER update
       $PKG_MANAGER install gcc g++ libxml2 make -q -y
       curl -fsSL https://developer.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.105_418.39_linux.run -O
-      sudo sh cuda_10.1.105_418.39_linux.run --driver --toolkit --samples --override --silent
+      sh cuda_10.1.105_418.39_linux.run --driver --toolkit --samples --override --silent
 
       # cudnn 7.5
       # from https://gitlab.com/nvidia/cuda/blob/11d87a863594bcb1da2965eee82ce0057a0312f8/10.1/devel/cudnn7/Dockerfile
       CUDNN_DOWNLOAD_SUM=c31697d6b71afe62838ad2e57da3c3c9419c4e9f5635d14b683ebe63f904fbc8 && \
       curl -fsSL http://developer.download.nvidia.com/compute/redist/cudnn/v7.5.0/cudnn-10.1-linux-x64-v7.5.0.56.tgz -O && \
       echo "$CUDNN_DOWNLOAD_SUM  cudnn-10.1-linux-x64-v7.5.0.56.tgz" | sha256sum -c - && \
-      sudo tar --no-same-owner -xzf cudnn-10.1-linux-x64-v7.5.0.56.tgz -C /usr/local && \
+      tar --no-same-owner -xzf cudnn-10.1-linux-x64-v7.5.0.56.tgz -C /usr/local && \
       rm cudnn-10.1-linux-x64-v7.5.0.56.tgz && \
-      (printf "/usr/local/cuda/lib64\n\n" | sudo tee -a /etc/ld.so.conf) && \
-      sudo /sbin/ldconfig
+      (printf "/usr/local/cuda/lib64\n\n" | tee -a /etc/ld.so.conf) && \
+      /sbin/ldconfig
     fi
-  cat <<- 'EOT' >> $HOME/.zshrc
+  as_real_user cat <<- 'EOT' >> $HOME/.zshrc
 # cuda
 export PATH=/usr/local/cuda/bin:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
@@ -314,8 +320,8 @@ run_if_needed "tmux" <<- 'EOM'
 $PKG_MANAGER update
 $PKG_MANAGER install tmux -q -y
 if [[ ! -d "$HOME/.tmux/plugins/tpm" ]]; then
-  git clone https://github.com/tmux-plugins/tpm $HOME/.tmux/plugins/tpm
-  cat <<- 'EOT' >> $HOME/.tmux.conf
+  as_real_user git clone https://github.com/tmux-plugins/tpm $HOME/.tmux/plugins/tpm
+  as_real_user cat <<- 'EOT' >> $HOME/.tmux.conf
 # List of plugins
 set -g @plugin 'tmux-plugins/tpm'
 set -g @plugin 'tmux-plugins/tmux-sensible'
@@ -327,7 +333,7 @@ run -b '~/.tmux/plugins/tpm/tpm'
 set-option -g mouse on
 set-option -g history-limit 20000
 EOT
-  tmux source $HOME/.tmux.conf
+  as_real_user tmux source $HOME/.tmux.conf
 fi
 EOM
 
@@ -335,10 +341,10 @@ EOM
 run_if_needed "gdb" <<- 'EOM'
 if [[ ! "$OSTYPE" == "darwin"* ]]; then
   # gdb dashboard
-  wget -q git.io/.gdbinit -O $HOME/.gdbinit
+  as_real_user wget -q git.io/.gdbinit -O $HOME/.gdbinit
 
   # helpers
-  cat <<- 'EOT' >> $HOME/.zshrc
+  as_real_user cat <<- 'EOT' >> $HOME/.zshrc
 # gdb
 function pgdb () {
   local TTY=$(tmux list-panes -s -F "#{pane_tty},#{pane_top},#{pane_left}" | \
