@@ -2,7 +2,7 @@
 
 set -eo pipefail
 
-if [ "$EUID" -eq 0 ]; then 
+if [ "$EUID" -eq 0 ]; then
   echo "Please do not run as root"
   exit 1
 fi
@@ -175,6 +175,9 @@ function run_if_needed() {
 
 pushd $DIR > /dev/null
 
+# topological order
+# TODO: maybe use tsort?
+
 # zsh
 run_if_needed "zsh" <<- 'EOM'
 if [[ -z $(command -v zsh) ]]; then
@@ -186,8 +189,10 @@ EOM
 
 # oh-my-zsh
 run_if_needed "oh-my-zsh" <<- 'EOM'
-$PKG_MANAGER update
-$PKG_MANAGER install git -q -y
+if ! which git > /dev/null ; then
+  $PKG_MANAGER update
+  $PKG_MANAGER install git -q -y
+fi
 if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
   sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 fi
@@ -227,42 +232,6 @@ alias gh="history | grep"
 EOT
 EOM
 
-# miniconda3
-# TODO: check version
-run_if_needed "conda" <<- 'EOM'
-if [[ -z $(command -v conda) ]]; then
-  wget https://repo.anaconda.com/miniconda/$MINICONDA_INSTALL_SH -O ./miniconda.sh
-  bash ./miniconda.sh -b -f -p $HOME/miniconda3
-
-  cat << 'EOT' >> $HOME/.zshrc
-# miniconda
-export PATH=$HOME/miniconda3/bin:$PATH
-EOT
-fi
-conda install jupyter ipython numpy scipy yaml matplotlib scikit-image scikit-learn \
-              six pytest mkl mkl-include pyyaml setuptools cmake cffi typing sphinx -y
-conda install -c conda-forge jupyter_contrib_nbextensions -y
-yes | pip install dominate visdom oyaml
-$PKG_MANAGER update
-$PKG_MANAGER install gcc g++ make -q -y
-pip uninstall pillow -y
-yes | CC="cc -mavx2" pip install -U --force-reinstall pillow-simd
-EOM
-
-# cuda home
-# TODO: install cuda if there is cuda-enabled GPU
-#   - PATH includes /usr/local/cuda-10.1/bin
-#   - LD_LIBRARY_PATH includes /usr/local/cuda-10.1/lib64, or, 
-#     add /usr/local/cuda-10.1/lib64 to /etc/ld.so.conf and run ldconfig as root
-run_if_needed "cuda" <<- 'EOM'
-if [[ -d "/usr/local/cuda" ]]; then
-  cat <<- 'EOT' >> $HOME/.zshrc
-# cuda
-export PATH=/usr/local/cuda/bin:$PATH
-EOT
-fi
-EOM
-
 # git
 run_if_needed "git" <<- 'EOM'
 if ! which git > /dev/null ; then
@@ -282,6 +251,61 @@ function grhr () {
   git reset --hard ${1:-origin}/$(git symbolic-ref --short HEAD)
 }
 EOT
+EOM
+
+# miniconda3
+# TODO: check version
+run_if_needed "conda" <<- 'EOM'
+if [[ -z $(command -v conda) ]]; then
+  wget https://repo.anaconda.com/miniconda/$MINICONDA_INSTALL_SH -O ./miniconda.sh
+  bash ./miniconda.sh -b -f -p $HOME/miniconda3
+
+  cat << 'EOT' >> $HOME/.zshrc
+# miniconda
+export PATH=$HOME/miniconda3/bin:$PATH
+EOT
+fi
+conda install jupyter ipython numpy scipy yaml matplotlib scikit-image scikit-learn \
+              six pytest mkl mkl-include pyyaml setuptools cmake cffi typing sphinx -y
+conda install -c conda-forge jupyter_contrib_nbextensions -y
+yes | pip install dominate visdom oyaml codemod
+$PKG_MANAGER update
+$PKG_MANAGER install gcc g++ make -q -y
+pip uninstall pillow -y
+yes | CC="cc -mavx2" pip install -U --force-reinstall pillow-simd
+EOM
+
+# cuda home
+# TODO: check os
+# TODO: check compute capability
+run_if_needed "cuda" <<- 'EOM'
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+  NVIDIA_GPUS=$(lspci | grep NVIDIA)
+  if [[ ! -z "$NVIDIA_GPUS" ]]; then
+    if [[ ! -d "/usr/local/cuda" ]]; then
+      # cuda 10.1
+      $PKG_MANAGER update
+      $PKG_MANAGER install gcc g++ libxml2 make -q -y
+      curl -fsSL https://developer.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.105_418.39_linux.run -O
+      sudo sh cuda_10.1.105_418.39_linux.run --driver --toolkit --samples --override --silent
+
+      # cudnn 7.5
+      # from https://gitlab.com/nvidia/cuda/blob/11d87a863594bcb1da2965eee82ce0057a0312f8/10.1/devel/cudnn7/Dockerfile
+      CUDNN_DOWNLOAD_SUM=c31697d6b71afe62838ad2e57da3c3c9419c4e9f5635d14b683ebe63f904fbc8 && \
+      curl -fsSL http://developer.download.nvidia.com/compute/redist/cudnn/v7.5.0/cudnn-10.1-linux-x64-v7.5.0.56.tgz -O && \
+      echo "$CUDNN_DOWNLOAD_SUM  cudnn-10.1-linux-x64-v7.5.0.56.tgz" | sha256sum -c - && \
+      sudo tar --no-same-owner -xzf cudnn-10.1-linux-x64-v7.5.0.56.tgz -C /usr/local && \
+      rm cudnn-10.1-linux-x64-v7.5.0.56.tgz && \
+      (printf "/usr/local/cuda/lib64\n\n" | sudo tee -a /etc/ld.so.conf) && \
+      sudo /sbin/ldconfig
+    fi
+  cat <<- 'EOT' >> $HOME/.zshrc
+# cuda
+export PATH=/usr/local/cuda/bin:$PATH
+export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
+EOT
+  fi
+fi
 EOM
 
 # tmux plugin manager
@@ -342,7 +366,6 @@ EOM
 
 # TODO: npm global dir https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally
 # TODO: vim, ctrl-p, NERDTree, https://github.com/scrooloose/nerdcommenter
-# TODO: codemod
 
 # if [[ -n "$ZSH_VERSION" ]]; then
 #   source $HOME/.zshrc
