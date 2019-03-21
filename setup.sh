@@ -48,8 +48,8 @@ function as_real_user() {
 }
 
 STORE_FILENAME=".ssnl_env_setup"
-touch $HOME/$STORE_FILENAME
-DIR=$(mktemp -d /tmp/setup.XXXXXXXXX)
+as_real_user touch $HOME/$STORE_FILENAME
+DIR=$(as_real_user mktemp -d /tmp/setup.XXXXXXXXX)
 
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
   # Linux
@@ -188,7 +188,7 @@ pushd $DIR > /dev/null
 # zsh
 run_if_needed "zsh" <<- 'EOM'
 if [[ -z $(command -v zsh) ]]; then
-  $PKG_MANAGER update
+  $PKG_MANAGER update -qq
   $PKG_MANAGER install zsh -q -y
   chsh -s $(which zsh) $real_user
 fi
@@ -197,7 +197,7 @@ EOM
 # oh-my-zsh
 run_if_needed "oh-my-zsh" <<- 'EOM'
 if ! which git > /dev/null ; then
-  $PKG_MANAGER update
+  $PKG_MANAGER update -qq
   $PKG_MANAGER install git -q -y
 fi
 if [[ ! -d "$HOME/.oh-my-zsh" ]]; then
@@ -206,7 +206,7 @@ fi
 
 # installl powerline fonts for agnoster theme
 if [[ "$PKG_MANAGER" == *"apt"* ]]; then
-  $PKG_MANAGER update
+  $PKG_MANAGER update -qq
   $PKG_MANAGER install fonts-powerline -q -y
 else
   # clone
@@ -226,10 +226,10 @@ EOM
 # basic shell setup
 run_if_needed "basic_shell" <<- 'EOM'
 if ! which vim > /dev/null ; then
-  $PKG_MANAGER update
+  $PKG_MANAGER update -qq
   $PKG_MANAGER install vim -q -y
 fi
-as_real_user cat <<-'EOT' >> $HOME/.zshrc
+as_real_user cat <<- 'EOT' >> $HOME/.zshrc
 unsetopt correct_all
 unsetopt correct
 # User specific aliases and functions for all shells
@@ -245,7 +245,7 @@ if ! which git > /dev/null ; then
   $PKG_MANAGER update
   $PKG_MANAGER install git -q -y
 fi
-as_real_user git config --global core.editor "vim"
+git config --global core.editor "vim"
 # aliases
 as_real_user cat <<- 'EOT' >> $HOME/.zshrc
 # git
@@ -263,11 +263,13 @@ EOM
 # miniconda3
 # TODO: check version
 run_if_needed "conda" <<- 'EOM'
+# just for test and installs below
+export PATH=$HOME/miniconda3/bin:$PATH
 if [[ -z $(command -v conda) ]]; then
   as_real_user wget https://repo.anaconda.com/miniconda/$MINICONDA_INSTALL_SH -O ./miniconda.sh
   as_real_user bash ./miniconda.sh -b -f -p $HOME/miniconda3
 
-  as_real_user cat << 'EOT' >> $HOME/.zshrc
+  as_real_user cat <<- 'EOT' >> $HOME/.zshrc
 # miniconda
 export PATH=$HOME/miniconda3/bin:$PATH
 EOT
@@ -275,11 +277,11 @@ fi
 as_real_user conda install jupyter ipython numpy scipy yaml matplotlib scikit-image scikit-learn \
                            six pytest mkl mkl-include pyyaml setuptools cmake cffi typing sphinx -y
 as_real_user conda install -c conda-forge jupyter_contrib_nbextensions -y
-yes | as_real_user pip install dominate visdom oyaml codemod
-$PKG_MANAGER update
+as_real_user pip install -q dominate visdom oyaml codemod
+$PKG_MANAGER update -qq
 $PKG_MANAGER install gcc g++ make -q -y
 as_real_user pip uninstall pillow -y
-yes | CC="cc -mavx2" pip install -U --force-reinstall pillow-simd
+CC="cc -mavx2" as_real_user pip install -U --force-reinstall -q pillow-simd
 EOM
 
 # cuda home
@@ -291,7 +293,7 @@ if [[ "$OSTYPE" == "linux-gnu" ]]; then
   if [[ ! -z "$NVIDIA_GPUS" ]]; then
     if [[ ! -d "/usr/local/cuda" ]]; then
       # cuda 10.1
-      $PKG_MANAGER update
+      $PKG_MANAGER update -qq
       $PKG_MANAGER install gcc g++ libxml2 make -q -y
       curl -fsSL https://developer.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.105_418.39_linux.run -O
       sh cuda_10.1.105_418.39_linux.run --driver --toolkit --samples --override --silent
@@ -318,7 +320,7 @@ EOM
 # tmux plugin manager
 # tmux better mouse mode
 run_if_needed "tmux" <<- 'EOM'
-$PKG_MANAGER update
+$PKG_MANAGER update -qq
 $PKG_MANAGER install tmux -q -y
 if [[ ! -d "$HOME/.tmux/plugins/tpm" ]]; then
   as_real_user git clone https://github.com/tmux-plugins/tpm $HOME/.tmux/plugins/tpm
@@ -379,4 +381,3 @@ EOM
 # fi
 
 popd > /dev/null
-
