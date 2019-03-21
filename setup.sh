@@ -2,17 +2,6 @@
 
 set -eo pipefail
 
-if [ "$EUID" -ne 0 ]; then
-  echo "Please run as root"
-  exit 1
-fi
-
-real_user=$(who am i | awk '{print $1}')
-
-function as_real_user() {
-  sudo -u $real_user "$@"
-}
-
 VERBOSE=false
 FORCE_RUNS=()
 
@@ -46,6 +35,18 @@ while test $# -gt 0; do
 done
 
 # set-up
+if [ "$EUID" -ne 0 ]; then
+  echo "Please run as root"
+  exit 1
+fi
+
+real_user=$(who am i | awk '{print $1}')
+
+# inspiration: https://github.com/pietern/pytorch-dockerfiles/blob/a06f8c4020112fdc6c1ac755ce3b475aa8d7fd51/common/install_conda.sh#L27-L32
+function as_real_user() {
+  sudo -H -u $real_user env -u SUDO_UID -u SUDO_GID -u SUDO_COMMAND -u SUDO_USER env "PATH=$PATH" "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" $*
+}
+
 STORE_FILENAME=".ssnl_env_setup"
 touch $HOME/$STORE_FILENAME
 DIR=$(mktemp -d /tmp/setup.XXXXXXXXX)
@@ -189,7 +190,7 @@ run_if_needed "zsh" <<- 'EOM'
 if [[ -z $(command -v zsh) ]]; then
   $PKG_MANAGER update
   $PKG_MANAGER install zsh -q -y
-  chsh -s $(which zsh) $USER
+  chsh -s $(which zsh) $real_user
 fi
 EOM
 
