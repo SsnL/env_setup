@@ -242,7 +242,7 @@ EOM
 # git
 run_if_needed "git" <<- 'EOM'
 if ! which git > /dev/null ; then
-  $PKG_MANAGER update
+  $PKG_MANAGER update -qq
   $PKG_MANAGER install git -q -y
 fi
 git config --global core.editor "vim"
