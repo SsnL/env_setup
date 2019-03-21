@@ -376,8 +376,9 @@ EOM
 # TODO: npm global dir https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally
 # TODO: vim, ctrl-p, NERDTree, https://github.com/scrooloose/nerdcommenter
 
-# if [[ -n "$ZSH_VERSION" ]]; then
-#   source $HOME/.zshrc
-# fi
+tset
+
+echo "All done!"
+echo "Run \`exec zsh --login\` after this!"
 
 popd > /dev/null
