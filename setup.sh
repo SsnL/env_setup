@@ -275,7 +275,8 @@ export PATH=$HOME/miniconda3/bin:$PATH
 EOT
 fi
 as_real_user conda install jupyter ipython numpy scipy yaml matplotlib scikit-image scikit-learn \
-                           six pytest mkl mkl-include pyyaml setuptools cmake cffi typing sphinx -y
+                           six pytest mkl mkl-include pyyaml setuptools cmake cffi typing sphinx \
+                           ninja tqdm -y
 as_real_user conda install -c conda-forge jupyter_contrib_nbextensions -y
 as_real_user pip install -q dominate visdom oyaml codemod
 $PKG_MANAGER update -qq
