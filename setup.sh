@@ -278,7 +278,7 @@ as_real_user conda install jupyter ipython numpy scipy yaml matplotlib scikit-im
                            six pytest mkl mkl-include pyyaml setuptools cmake cffi typing sphinx \
                            ninja tqdm -y
 as_real_user conda install -c conda-forge jupyter_contrib_nbextensions -y
-as_real_user pip install -q dominate visdom oyaml codemod
+as_real_user pip install -q dominate visdom oyaml codemod opencv-python
 $PKG_MANAGER update -qq
 $PKG_MANAGER install gcc g++ make -q -y
 as_real_user pip uninstall pillow -y
