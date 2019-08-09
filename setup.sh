@@ -3,14 +3,14 @@
 set -eo pipefail
 
 VERBOSE=false
-FORCE_RUNS=()
+SELECTED_SECTIONS=()
 
 while test $# -gt 0; do
   case "$1" in
     -h|--help)
       echo "Set up environment"
       echo " "
-      echo "$0 [options] [sections forced to execute]"
+      echo "$0 [options] [sections selected to force execute, empty means executing all outdated sections]"
       echo " "
       echo "options:"
       echo "-h, --help                show brief help"
@@ -28,7 +28,7 @@ while test $# -gt 0; do
       shift
       ;;
     *)
-      FORCE_RUNS+=("$1")
+      SELECTED_SECTIONS+=("$1")
       shift
       ;;
   esac
@@ -142,8 +142,8 @@ function run_if_needed() {
   local RUN=0
 
   if [[ "$SCRIPT_SHA" == "$STORED_SHA" ]]; then
-    for FORCE_RUN in ${FORCE_RUNS[@]}; do
-      if [[ "$(to_lower $NAME)" == "$(to_lower $FORCE_RUN)" ]]; then
+    for SELECTED_SECTION in ${SELECTED_SECTIONS[@]}; do
+      if [[ "$(to_lower $NAME)" == "$(to_lower $SELECTED_SECTION)" ]]; then
         if $VERBOSE ; then
           echo "$NAME has matched sha but is in the list of forced run sections"
         fi
@@ -151,7 +151,10 @@ function run_if_needed() {
       fi
     done
   else
-    local RUN=1
+    #  run outdated if not selected sections are specified
+    if [[ ${#SELECTED_SECTIONS[@]} -eq 0 ]]; then
+      local RUN=1
+    fi
   fi
 
   if [[ "$RUN" == "1" ]]; then
@@ -278,8 +281,9 @@ as_real_user conda install jupyter ipython numpy scipy yaml matplotlib scikit-im
                            six pytest mkl mkl-include pyyaml setuptools cmake cffi typing sphinx \
                            ninja tqdm -y
 as_real_user conda install -c conda-forge jupyter_contrib_nbextensions -y
-as_real_user pip install -q dominate visdom oyaml codemod opencv-python
+as_real_user pip install -q dominate visdom oyaml codemod opencv-python pyvirtualdisplay
 $PKG_MANAGER update -qq
+$PKG_MANAGER install xvfb xserver-xephyr vnc4server -q -y
 $PKG_MANAGER install gcc g++ make -q -y
 as_real_user pip uninstall pillow -y
 CC="cc -mavx2" as_real_user pip install -U --force-reinstall -q pillow-simd
