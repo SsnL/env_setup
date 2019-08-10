@@ -3,6 +3,7 @@
 set -eo pipefail
 
 VERBOSE=false
+DRY_RUN=false
 SELECTED_SECTIONS=()
 
 while test $# -gt 0; do
@@ -16,6 +17,7 @@ while test $# -gt 0; do
       echo "-h, --help                show brief help"
       echo "-v, --verbose             turn on verbose mode"
       echo "-vv                       turn on \`set -x\` and verbose mode"
+      echo "--dry-run                 dry-run"
       exit 0
       ;;
     -v|--verbose)
@@ -24,6 +26,11 @@ while test $# -gt 0; do
       ;;
     -vv)
       VERBOSE=true
+      set -x
+      shift
+      ;;
+    --dry-run)
+      DRY_RUN=true
       set -x
       shift
       ;;
@@ -114,7 +121,7 @@ function run_if_needed() {
 
   (
   if $VERBOSE ; then
-    echo -e "Script is\n\n$(echo "$SCRIPT" | indent)\n"
+    echo -e "Script is\n\n$(printf %s "$SCRIPT" | indent)\n"
   fi
 
   for SEEN_NAME in "$SEEN_NAMES"; do
@@ -158,25 +165,29 @@ function run_if_needed() {
   fi
 
   if [[ "$RUN" == "1" ]]; then
-    if $VERBOSE ; then
-      local CONTENT_BEFORE="$(cat $HOME/$STORE_FILENAME)"
-    fi
-    sed_inplace "/^$NAME[[:space:]]/d" $HOME/$STORE_FILENAME
-    eval "$SCRIPT"
-    local RV=$?
-    echo "$NAME $SCRIPT_SHA" >> $HOME/$STORE_FILENAME
-    if $VERBOSE ; then
-      echo ""
-      echo "$HOME/$STORE_FILENAME diff: "
-      local DIFF=$( diff -u <(echo "$CONTENT_BEFORE") $HOME/$STORE_FILENAME || true )
-      if [[ ! $DIFF ]]; then
-        local DIFF="NONE"
+    if $DRY_RUN ; then
+      echo -e "skipped (dry-run. will run otherwise)!\n"
+    else
+      if $VERBOSE ; then
+        local CONTENT_BEFORE="$(cat $HOME/$STORE_FILENAME)"
       fi
-      echo "$DIFF"
-      echo ""
+      sed_inplace "/^$NAME[[:space:]]/d" $HOME/$STORE_FILENAME
+      eval "$SCRIPT"
+      local RV=$?
+      echo "$NAME $SCRIPT_SHA" >> $HOME/$STORE_FILENAME
+      if $VERBOSE ; then
+        echo ""
+        echo "$HOME/$STORE_FILENAME diff: "
+        local DIFF=$( diff -u <(echo "$CONTENT_BEFORE") $HOME/$STORE_FILENAME || true )
+        if [[ ! $DIFF ]]; then
+          local DIFF="NONE"
+        fi
+        echo "$DIFF"
+        echo ""
+      fi
+      echo -e "done!\n"
+      return $?
     fi
-    echo -e "done!\n"
-    return $?
   else
     echo -e "skipped!\n"
   fi
@@ -375,8 +386,6 @@ alias cpgdb="cuda-gdb -tui r --args python"
 EOT
 fi
 EOM
-
-# TODO: fix printing of things like \033\0143 in script above when -v
 
 # TODO: npm global dir https://docs.npmjs.com/resolving-eacces-permissions-errors-when-installing-packages-globally
 # TODO: vim, ctrl-p, NERDTree, https://github.com/scrooloose/nerdcommenter
