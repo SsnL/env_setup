@@ -290,9 +290,9 @@ EOT
 fi
 as_real_user conda install jupyter ipython numpy scipy yaml matplotlib scikit-image scikit-learn \
                            six pytest mkl mkl-include pyyaml setuptools cmake cffi typing sphinx \
-                           ninja tqdm -y
+                           ninja tqdm imageio -y
 as_real_user conda install -c conda-forge jupyter_contrib_nbextensions -y
-as_real_user pip install -q dominate visdom oyaml codemod opencv-python pyvirtualdisplay
+as_real_user pip install -q dominate visdom oyaml codemod opencv-python pyvirtualdisplay imageio-ffmpeg
 $PKG_MANAGER update -qq
 $PKG_MANAGER install xvfb xserver-xephyr vnc4server -q -y
 $PKG_MANAGER install gcc g++ make -q -y
