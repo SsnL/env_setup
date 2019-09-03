@@ -297,7 +297,8 @@ as_real_user conda install jupyter ipython numpy scipy yaml matplotlib scikit-im
 as_real_user conda install -c conda-forge jupyter_contrib_nbextensions -y
 as_real_user conda install -c pytorch pytorch torchvision cudatoolkit=10.0 -y  # TODO: Is using 10.0 here fine? No official 10.1 binary...
 as_real_user pip install -q oyaml codemod threadpoolctl
-as_real_user pip install -q dominate visdom  opencv-python imageio-ffmpeg
+as_real_user conda install -c conda-forge imageio-ffmpeg -y
+as_real_user pip install -q dominate visdom opencv-python
 as_real_user pip install -q pyvirtualdisplay gym pyro-ppl box2d-py
 as_real_user pip uninstall pillow -y
 CC="cc -mavx2" as_real_user pip install -U --force-reinstall -q pillow-simd
