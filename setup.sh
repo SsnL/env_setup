@@ -298,7 +298,7 @@ as_real_user pip install -q dominate visdom  opencv-python imageio-ffmpeg
 as_real_user pip install -q pyvirtualdisplay gym pyro-ppl box2d-py
 $PKG_MANAGER update -qq
 $PKG_MANAGER install gcc g++ make -q -y
-$PKG_MANAGER install xvfb xserver-xephyr vnc4serverpython-opengl -q -y
+$PKG_MANAGER install xvfb xserver-xephyr vnc4serverpython-opengl ffmpeg -q -y
 as_real_user pip uninstall pillow -y
 CC="cc -mavx2" as_real_user pip install -U --force-reinstall -q pillow-simd
 EOM
