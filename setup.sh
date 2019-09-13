@@ -337,6 +337,10 @@ EOT
 fi
 EOM
 
+run_if_needed "gcp" <<- 'EOM'
+CLOUDSDK_CORE_DISABLE_PROMPTS=1 curl https://sdk.cloud.google.com | bash
+EOM
+
 # tmux plugin manager
 # tmux better mouse mode
 run_if_needed "tmux" <<- 'EOM'
