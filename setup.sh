@@ -69,7 +69,7 @@ if [[ "$OSTYPE" == "linux-gnu" ]]; then
 elif [[ "$OSTYPE" == "darwin"* ]]; then
   # macOS
   MINICONDA_INSTALL_SH="Miniconda3-latest-MacOSX-x86_64.sh"
-  PKG_MANAGER="brew"
+  PKG_MANAGER="as_real_user brew"
 elif [[ "$OSTYPE" == "cygwin" ]]; then
   # POSIX compatibility layer and Linux environment emulation for Windows
   true
@@ -362,6 +362,14 @@ set-option -g history-limit 20000
 EOT
   as_real_user tmux source $HOME/.tmux.conf
 fi
+
+# helper
+as_real_user cat <<- 'EOT' >> $HOME/.zshrc
+# tmux
+function tmux-split-cmd() {
+  tmux split-window -dh -t $TMUX_PANE "zsh -c 'source $HOME/.zshrc; $*; zsh -i'"
+}
+EOT
 EOM
 
 # gdb
