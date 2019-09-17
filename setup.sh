@@ -367,7 +367,10 @@ fi
 as_real_user cat <<- 'EOT' >> $HOME/.zshrc
 # tmux
 function tmux-split-cmd() {
-  tmux split-window -dh -t $TMUX_PANE "zsh -c 'source $HOME/.zshrc; $*; zsh -i'"
+  COMMAND=( ${@} )
+  COMMAND="$(printf "%q " "${COMMAND[@]}")"
+  ZSH_COMMAND="source $HOME/.zshrc; $COMMAND; zsh -i"
+  tmux split-window -dh -t $TMUX_PANE "zsh -c '$ZSH_COMMAND'"
 }
 EOT
 EOM
