@@ -253,6 +253,19 @@ alias gh="history | grep"
 EOT
 EOM
 
+# npm
+run_if_needed "npm" <<- 'EOM'
+if ! which npm > /dev/null ; then
+  if [[ "$PKG_MANAGER" == *"apt"* ]]; then
+    curl -sL https://deb.nodesource.com/setup_12.x | -E bash -
+    apt-get install -y nodejs
+  fi
+fi
+if which npm > /dev/null ; then
+  npm install -g http-server
+fi
+EOM
+
 # git
 run_if_needed "git" <<- 'EOM'
 if ! which git > /dev/null ; then
