@@ -257,7 +257,7 @@ EOM
 run_if_needed "npm" <<- 'EOM'
 if ! which npm > /dev/null ; then
   if [[ "$PKG_MANAGER" == *"apt"* ]]; then
-    curl -sL https://deb.nodesource.com/setup_12.x | -E bash -
+    curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
     apt-get install -y nodejs
   fi
 fi
