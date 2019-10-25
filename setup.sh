@@ -382,11 +382,13 @@ fi
 # helper
 as_real_user cat <<- 'EOT' >> $HOME/.zshrc
 # tmux
+zmodload zsh/mathfunc
 function tmux-split-cmd() {
   COMMAND=( ${@} )
   COMMAND="$(printf "%q " "${COMMAND[@]}")"
+  DENOM=${DENOM:-2}
   ZSH_COMMAND="source $HOME/.zshrc; $COMMAND; zsh -i"
-  tmux split-window -dh -t $TMUX_PANE "zsh -c '$ZSH_COMMAND'"
+  tmux split-window -dh -p $((int(rint(100./$DENOM)))) -t $TMUX_PANE "zsh -c '$ZSH_COMMAND'"
 }
 EOT
 EOM
