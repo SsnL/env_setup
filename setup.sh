@@ -234,7 +234,7 @@ else
 fi
 
 # set theme
-sed_inplace "s/^ZSH_THEME=.*$/ZSH_THEME=\"agnoster\"/g" $HOME/.zshrc
+as_real_user sed_inplace "s/^ZSH_THEME=.*$/ZSH_THEME=\"agnoster\"/g" $HOME/.zshrc
 EOM
 
 # basic shell setup
