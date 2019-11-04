@@ -306,7 +306,7 @@ $PKG_MANAGER install gcc g++ make -q -y
 $PKG_MANAGER install xvfb xserver-xephyr vnc4server python-opengl ffmpeg -q -y
 as_real_user conda install jupyter ipython numpy scipy yaml matplotlib scikit-image scikit-learn \
                            six pytest mkl mkl-include pyyaml setuptools cmake cffi typing sphinx \
-                           ninja tqdm imageio -y
+                           ninja tqdm imageio psutil -y
 as_real_user conda install -c conda-forge jupyter_contrib_nbextensions -y
 as_real_user conda install -c pytorch pytorch torchvision cudatoolkit=10.0 -y  # TODO: Is using 10.0 here fine? No official 10.1 binary...
 as_real_user pip install -q oyaml codemod threadpoolctl
