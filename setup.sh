@@ -306,9 +306,9 @@ $PKG_MANAGER install gcc g++ make -q -y
 $PKG_MANAGER install xvfb xserver-xephyr vnc4server python-opengl ffmpeg -q -y
 as_real_user conda install jupyter ipython numpy scipy yaml matplotlib scikit-image scikit-learn \
                            six pytest mkl mkl-include pyyaml setuptools cmake cffi typing sphinx \
-                           ninja tqdm imageio psutil -y
+                           ninja tqdm imageio psutil pandas -y
 as_real_user conda install -c conda-forge jupyter_contrib_nbextensions -y
-as_real_user conda install -c pytorch pytorch torchvision cudatoolkit=10.0 -y  # TODO: Is using 10.0 here fine? No official 10.1 binary...
+as_real_user conda install -c pytorch pytorch torchvision cudatoolkit=10.2 -y
 as_real_user pip install -q oyaml codemod threadpoolctl ring easydict
 as_real_user conda install -c conda-forge ffmpeg imageio-ffmpeg -y
 as_real_user pip install -q dominate visdom opencv-python aiohttp setproctitle shortuuid
@@ -326,19 +326,19 @@ if [[ "$OSTYPE" == "linux-gnu" ]]; then
   NVIDIA_GPUS=$(lspci | grep NVIDIA)
   if [[ ! -z "$NVIDIA_GPUS" ]]; then
     if [[ ! -d "/usr/local/cuda" ]]; then
-      # cuda 10.1
+      # cuda 10.2
       $PKG_MANAGER update -qq
       $PKG_MANAGER install gcc g++ libxml2 make -q -y
-      curl -fsSL https://developer.nvidia.com/compute/cuda/10.1/Prod/local_installers/cuda_10.1.105_418.39_linux.run -O
-      sh cuda_10.1.105_418.39_linux.run --driver --toolkit --samples --override --silent
+      curl -fsSL https://developer.download.nvidia.com/compute/cuda/10.2/Prod/local_installers/cuda_10.2.89_440.33.01_linux.run -O
+      sh cuda_10.2.89_440.33.01_linux.run --driver --toolkit --samples --override --silent
 
-      # cudnn 7.5
-      # from https://gitlab.com/nvidia/cuda/blob/11d87a863594bcb1da2965eee82ce0057a0312f8/10.1/devel/cudnn7/Dockerfile
-      CUDNN_DOWNLOAD_SUM=c31697d6b71afe62838ad2e57da3c3c9419c4e9f5635d14b683ebe63f904fbc8 && \
-      curl -fsSL http://developer.download.nvidia.com/compute/redist/cudnn/v7.5.0/cudnn-10.1-linux-x64-v7.5.0.56.tgz -O && \
-      echo "$CUDNN_DOWNLOAD_SUM  cudnn-10.1-linux-x64-v7.5.0.56.tgz" | sha256sum -c - && \
-      tar --no-same-owner -xzf cudnn-10.1-linux-x64-v7.5.0.56.tgz -C /usr/local && \
-      rm cudnn-10.1-linux-x64-v7.5.0.56.tgz && \
+      # cudnn 7.6.5
+      # from https://gitlab.com/nvidia/container-images/cuda/-/blob/d442ff6975fb8310da90e6c3f35a988b6920b017/dist/centos7/10.2/devel/cudnn7/Dockerfile
+      CUDNN_DOWNLOAD_SUM=600267f2caaed2fd58eb214ba669d8ea35f396a7d19b94822e6b36f9f7088c20 && \
+      curl -fsSL http://developer.download.nvidia.com/compute/redist/cudnn/v7.6.5/cudnn-10.2-linux-x64-v7.6.5.32.tgz -O && \
+      echo "$CUDNN_DOWNLOAD_SUM  cudnn-10.2-linux-x64-v7.6.5.32.tgz" | sha256sum -c - && \
+      tar --no-same-owner -xzf cudnn-10.2-linux-x64-v7.6.5.32.tgz -C /usr/local && \
+      rm cudnn-10.2-linux-x64-v7.6.5.32.tgz && \
       (printf "/usr/local/cuda/lib64\n\n" | tee -a /etc/ld.so.conf) && \
       /sbin/ldconfig
     fi
