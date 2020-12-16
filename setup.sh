@@ -368,6 +368,7 @@ set -g @plugin 'tmux-plugins/tpm'
 set -g @plugin 'tmux-plugins/tmux-sensible'
 set -g @plugin 'nhdaly/tmux-better-mouse-mode'
 
+set -g default-terminal "screen-256color"
 set-option -g mouse on
 set-option -g history-limit 20000
 bind c new-window -c "#{pane_current_path}"
