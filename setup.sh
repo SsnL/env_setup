@@ -306,7 +306,8 @@ $PKG_MANAGER install gcc g++ make -q -y
 $PKG_MANAGER install xvfb xserver-xephyr vnc4server python-opengl ffmpeg -q -y
 as_real_user conda install jupyter ipython numpy scipy yaml matplotlib scikit-image scikit-learn \
                            six pytest mkl mkl-include pyyaml setuptools cmake cffi typing sphinx \
-                           ninja tqdm imageio psutil pandas -y
+                           ninja tqdm imageio psutil pandas seaborn -y
+as_real_user conda install -c conda-forge jupyterlab -y
 as_real_user conda install -c conda-forge jupyter_contrib_nbextensions -y
 as_real_user conda install -c pytorch pytorch torchvision cudatoolkit=10.2 -y
 as_real_user pip install -q oyaml codemod threadpoolctl ring easydict
@@ -314,7 +315,8 @@ as_real_user conda install -c conda-forge ffmpeg imageio-ffmpeg -y
 as_real_user pip install -q dominate visdom opencv-python aiohttp setproctitle shortuuid einops
 as_real_user pip install -q pyvirtualdisplay gym pyro-ppl box2d-py roboschool atari-py
 as_real_user pip uninstall pillow -y
-as_real_user pip install git+https://github.com/CMA-ES/pycma.git@master
+as_real_user pip install -q git+https://github.com/CMA-ES/pycma.git@master
+as_real_user pip install -q dill casadi plotille einops gym-minigrid
 CC="cc -mavx2" as_real_user pip install -U --force-reinstall -q pillow-simd
 EOM
 
